@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Rate Limiter Dashboard</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:#f5f7fb;
+    padding:40px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+    color:#333;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+    margin-bottom:30px;
+}
+
+.stat{
+    font-size:40px;
+    color:#0d6efd;
+    font-weight:bold;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#0d6efd;
+    color:white;
+    padding:14px;
+}
+
+td{
+    padding:12px;
+    text-align:center;
+    border-bottom:1px solid #ddd;
+}
+
+tr:hover{
+    background:#f3f3f3;
+}
+
+.refresh{
+    margin-top:20px;
+    color:gray;
+    font-size:14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🚦 Distributed API Rate Limiter Dashboard</h1>
+
+<div class="card">
+
+<h2>Total Violations</h2>
+
+<div id="totalViolations" class="stat">
+0
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Recent Violations</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>IP Address</th>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Timestamp</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tableBody">
+
+</tbody>
+
+</table>
+
+<div class="refresh">
+Auto Refresh : Every 5 Seconds
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+async function loadStats(){
+
+    const response=await fetch("/dashboard/stats");
+
+    const total=await response.text();
+
+    document.getElementById("totalViolations").innerHTML=total;
+
+}
+
+async function loadViolations(){
+
+    const response=await fetch("/dashboard/violations");
+
+    const data=await response.json();
+
+    const table=document.getElementById("tableBody");
+
+    table.innerHTML="";
+
+    data.forEach(v=>{
+
+        table.innerHTML+=`
+
+        <tr>
+
+        <td>${v.id}</td>
+
+        <td>${v.ipAddress}</td>
+
+        <td>${v.endpoint}</td>
+
+        <td>${v.method}</td>
+
+        <td>${v.timestamp}</td>
+
+        </tr>
+
+        `;
+
+    });
+
+}
+
+async function refreshDashboard(){
+
+    await loadStats();
+
+    await loadViolations();
+
+}
+
+refreshDashboard();
+
+setInterval(refreshDashboard,5000);
+
+</script>
+
+</body>
+
+</html>
